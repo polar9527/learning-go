@@ -1,0 +1,21 @@
+syntax = "proto3"; // 使用 protobuf3的语法
+package example;
+
+message Demo3Request {
+  int64 id = 1;
+}
+message Demo3Response {
+  string name = 1;
+  int32 age = 2;
+  enum Gender {
+    MALE = 0;
+    FEMALE = 1;
+    UNKNOWN = 2;
+  }
+  message Other {
+    string addr = 1;
+    string hobby = 2;
+    Gender g = 3;
+  }
+  Other info = 3;
+}
