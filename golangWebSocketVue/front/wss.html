@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- import Vue before Element -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+
+<body>
+<div id="app">
+    <el-row :gutter="20">
+        <el-col :span="16">
+            <div class="grid-content bg-purple">
+                <el-input v-model="message" placeholder="请输入内容" @keyup.enter.native="submitMessage"></el-input>
+            </div>
+        </el-col>
+        <el-col :span="8">
+            <div class="grid-content bg-purple">
+                <el-button @click="submitMessage">发送信息</el-button>
+            </div>
+        </el-col>
+    </el-row>
+    <el-row>
+        <el-col :span="24">
+            <div class="grid-content bg-purple-dark">
+                <el-button type="primary" @click="GetWsStatus">获取WS状态</el-button>
+                <el-button type="success" @click="defaultWs">重新连接WS</el-button>
+                <el-button type="info" @click="reloadPage">重新加载页面</el-button>
+                <el-button type="warning" @click="showRespData" v-model="showButtonTitle">{{showButtonTitle}}数据</el-button>
+                <el-button type="danger" @click="doCloseWS">关闭WS连接</el-button>
+            </div>
+        </el-col>
+    </el-row>
+    <el-row>
+        <el-col :span="24">
+            <div class="grid-content bg-purple-light" v-show="showSwitch && showData != ''" v-html="showData">
+            </div>
+        </el-col>
+    </el-row>
+</div>
+<script>
+    vue = new Vue({
+        el: '#app',
+        data() {
+            return {
+                addr: '127.0.0.1',
+                port: '10086',
+                message: '',
+                showSwitch: false,
+                showData: '',
+                showButtonTitle:'显示',
+                ws: null
+            }
+        },
+        // 初始创建
+        created() {
+            this.defaultWs()
+        },
+        // 离开页面时销毁ws
+        destroyed() {
+            this.ws.close()
+        },
+        methods: {
+            defaultWs() {
+                console.log('try to connect webSocket')
+                if ("WebSocket" in window) {
+                    console.log('support webSocket')
+                    var connectInfo = 'ws://' + this.addr + ':' + this.port + '/echo'
+                    this.ws = new WebSocket(connectInfo)
+                    this.ws.onopen = this.wsOnopen
+                    this.ws.onmessage = this.wsOnMessage
+                    this.ws.onclose = this.wsOnClose
+                }
+            },
+            wsOnopen() {
+                console.log('connect success')
+            },
+            wsOnMessage(e) {
+                console.log('receive data: ')
+                this.showData += '<span style="float:right">'+ e.data + ' : say server' + '</span><br />'
+                console.log(e.data)
+                console.log(this.showData)
+            },
+            wsOnClose(e) {
+                this.ws.close()
+            },
+            wsOnSend(data) {
+                this.ws.send(data)
+            },
+            // 提交信息
+            submitMessage() {
+                if (this.message !== '') {
+                    console.log('submit some data....')
+                    this.wsOnSend(this.message)
+                    this.showData += 'I say:' + this.message+'<br />'
+                    this.message = ''
+                }
+            },
+            // ws 状态查询
+            GetWsStatus() {
+                switch (this.ws.readyState) {
+                    // 正在连接
+                    case WebSocket.CONNECTING:
+                        this.$message({
+                            message: 'WebSocket正在连接',
+                        })
+                        break
+                    // 连接成功
+                    case WebSocket.OPEN:
+                        this.$message({
+                            message: 'WebSocket连接成功',
+                            type:'success'
+                        })
+                        break
+                    // 已经关闭
+                    case WebSocket.CLOSED:
+                        this.$message({
+                            message: 'WebSocket连接已经关闭',
+                            type: 'error'
+                        })
+                        break
+                    // 正在关闭
+                    case WebSocket.CLOSING:
+                        this.$message({
+                            message: 'WebSocket连接正在关闭',
+                        })
+                        break
+                }
+            },
+            // 执行关闭ws
+            doCloseWS() {
+                this.wsOnClose()
+                this.$message({
+                    message: 'WebSocket关闭成功',
+                    type: 'success'
+                });
+            },
+            // 重新加载页面
+            reloadPage() {
+                location.reload()
+            },
+            // 显示获取的数据
+            showRespData() {
+                this.showSwitch ? this.showButtonTitle = '显示' : this.showButtonTitle='隐藏'
+                this.showSwitch ? this.showSwitch = false : this.showSwitch = true
+            }
+        },
+
+    })
+</script>
+</body>
+<style>
+    .el-row {
+        margin-top: 10px;
+    }
+
+    .bg-purple-light {
+        background-color: aliceblue;
+    }
+    .speak-input {
+        height: 200px;
+    }
+
+</style>
+
+</html>
