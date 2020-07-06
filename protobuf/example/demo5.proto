@@ -1,0 +1,29 @@
+syntax = "proto3";
+package example;
+// 添加服务
+service Demo5 {
+  // 定义服务接口
+  rpc GetInfo (Demo5Request) returns (Demo5Response) {
+  }
+  rpc SetName (Demo5Request) returns (Demo5Response) {
+  }
+}
+message Demo5Request {
+  string name = 1;
+  int32 age = 2;
+  enum Gender {
+    MALE = 0;
+    FEMALE = 1;
+  }
+  message Other {
+    string addr = 1;
+
+
+    string hobby = 2;
+    Gender g = 3;
+  }
+  Other info = 3;
+}
+message Demo5Response {
+  string info = 1;
+}
